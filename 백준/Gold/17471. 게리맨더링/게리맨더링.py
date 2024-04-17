@@ -1,97 +1,73 @@
+
 from collections import deque
 import sys
 input = sys.stdin.readline
 
-# 구역의 개수
-N =int(input())
-# 각 구역의 사람수 1~N번 구역
+# 두 선거구의 인구차이의 최솟값 구하기
+# 나눌 수 없으면 -1 출력
+minV = 1e9
+
+N = int(input())
+# 지역 1번 부터 시작
 people = [0] + list(map(int, input().split()))
-
-# 전체 인구수 합
-sumAll = sum(people)
-
-graph = [set() for _ in range(N+1)]
+sumP = sum(people) # 전체합 구해두기
+graph = [ set() for _ in range(N+1)]  # 그래프 
 for i in range(1, N+1):
     lst = list(map(int, input().split()))
-    for j in lst[1:]:
-        graph[i].add(j)
-        graph[j].add(i)
-# print(graph) # [set(), {2, 4}, {1, 3, 5, 6}, {2, 4}, {1, 3}, {2}, {2}]
+    for x in lst[1:]:
+        graph[i].add(x)
+    
+# print(graph)  # 양방향임
 
+# 연결 여부 확인
+def check(team):
 
-
-# 인구 1이상 N-1이하로 묶어서 1개만 구해서 차이구하기
-
-# 1개일 때 나머지 묶이는지
-# 2개 일때 나머지 묶이는지
-# 1~N//2까지만 구해도 반대편 알아서 정해짐.
-
-# 조합으로 만들고 두개의 인구에 대해 인접해 있는지 확인 후
-# 차이 구하기
-
-# 인접해 있을까?
-def bfs(lst):
+    cnt = len(team)-1
+    visited = [False]*(N+1)
 
     q = deque()
-    used = [False]*(N+1)
-
-    start = lst[0]
-    q.append(start)
-    used[start] = True
-
-    sumV = people[start]
-    while q:
-
-        t = q.popleft()
-
-        for i in graph[t]:
-
-            # 구한 팀 안에 속한 구역이면서 인접구역이면
-            if i in lst and not used[i]:
-                sumV += people[i]  # 선거구의 인구합
-                used[i] = True  # 방문 표시
-                q.append(i)
-
-    return sumV
-
+    q.append(team[0])
+    visited[team[0]] = True
     
+    while q:
+        i = q.popleft()
 
-def combi(k, s, lst, sumP):
+        for t in list(graph[i]):
+            if t in team and not visited[t]:
+                q.append(t)
+                visited[t] = True
+                cnt -= 1
+    if cnt == 0:
+        return True
+    else:
+        return False
 
-    if k==stop:
+def combi(k, s, teamA, sumA):
+    global minV
 
-        # 상대팀도 구해줘야함.
-        lst_2 = []
+    if k == K:
+        teamB = []
         for j in range(1, N+1):
-            if j not in lst:
-                lst_2.append(j)
+            if j not in teamA:
+                teamB.append(j)
 
-        if sumP == bfs(lst) and (sumAll-sumP)==bfs(lst_2):
-            ans = abs(sumP - (sumAll-sumP) )
-            result.append(ans)
-        return
+        if check(teamA) and check(teamB):
+            minV = min(minV, abs(2*sumA - sumP))  # sumA - (sumP - sumA)
+            return
     
     for i in range(s, N+1):
-        if not visited[i]:
-            visited[i] = True
-            combi(k+1, i+1, lst+[i], sumP + people[i])
-            visited[i]= False
+        combi(k+1, i+1, teamA+[i], sumA+people[i])
 
 
-# 결과 구하기
-# ex) N=6이면 1~3명까지 이루어진 구역하나 만들어야함.
-result = []
+    return
 
-for i in range(1, N//2+1):
+# N=6이면 한 선거구 뽑을 때 1, 2, 3(5, 4, 3)까지만 뽑으면 다른 구 정해짐.
+for K in range(1, N//2+1):
+    K = K # 한 선거구 총 수
     visited = [False]*(N+1)
-    stop = i
-    combi(0, 1, [], 0)
+    combi(0, 0, [], 0)
 
-
-if result:
-
-    print(min(result))
-
-else:
+if minV == 1e9:
     print(-1)
-
+else:
+    print(minV)
