@@ -1,44 +1,50 @@
-# 1926 그림
+# 그림
+
 import sys
 from collections import deque
 
 input = sys.stdin.readline
 
-def bfs(r,c):
+
+n, m = map(int, input().split())
+arr = [list(map(int, input().split())) for _ in range(n)]
+visited = [[False]*m for _ in range(n)]
+
+def bfs(r,c, sumV):
 
     q = deque()
-    q.append( (r,c) )
+    q.append((r,c))
     visited[r][c] = True
-    cnt = 1
+    sumV += visited[r][c]
 
     while q:
         tr, tc = q.popleft()
-        for dr, dc in [(0, 1), (0, -1), (-1, 0), (1, 0)]:
-            nr = tr + dr
-            nc = tc + dc
-            if 0<= nr < N and 0<= nc < M and not visited[nr][nc] and ARR[nr][nc]==1:
-                cnt += 1
+
+        for dr, dc in [(0,1), (0,-1), (1,0), (-1,0)]:
+            nr = tr+dr
+            nc = tc+dc
+            if 0<=nr<n and 0<=nc<m and not visited[nr][nc] and arr[nr][nc]==1:
                 visited[nr][nc] = True
-                q.append( (nr, nc) )
+                sumV += visited[nr][nc]
+                q.append((nr, nc))
+                # print(visited)
+    return sumV
 
-    return cnt
 
-N, M = map(int, input().split())
-ARR = [list(map(int, input().split())) for _ in range(N)]
-visited = [ [False]*M for _ in range(N)]
+sumList = []
+for r in range(n):
+    for c in range(m):
 
-ans = 0
-result = []
-for r in range(N):
-    for c in range(M):
-        if not visited[r][c] and ARR[r][c]==1:
-            result.append( bfs(r,c) )
-            ans += 1
+        if not visited[r][c] and arr[r][c]==1:
+            x = bfs(r,c, 0)
+            # print(x)
+            sumList.append(x)
 
-if len(result)==0:
-    print(ans)
-    print(0)
+
+if sumList:
+    print(len(sumList))
+    print(max(sumList))
 
 else:
-    print(ans)
-    print(max(result))
+    print(0)
+    print(0)
